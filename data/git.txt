@@ -1,0 +1,46 @@
+https://github.com/marceloalvesuff/iesp_inverno
+
+
+for (x in q){
+    
+    
+    print(paste("Coletando dados com a query", x, s, "em", Sys.time())) 
+    tweets <- search_tweets(paste0(x, " ", s, " until:2018-07-09"), n = 1000000,
+                            type = "mixed", include_rts = TRUE,
+                            parse = TRUE, 
+                            token = token,
+                            retryonratelimit = T,
+                            lang = "pt")
+    
+    ### prep
+    
+
+    tmp <- sapply(tweets, class)
+    tmp <- grep("list", tmp)
+    
+    data <-   tweets %>%
+      lat_lng() %>%
+      select(-tmp) %>%
+      add_column(query = x, 
+                 log = Sys.time()) %>%
+      mutate(mes =  format(created_at,format="%B"),
+             mes_dia = format(created_at,format="%d-%m"))
+    
+    data_list <- tweets %>%
+      select(c(2, tmp))  %>%
+      unnest(urls_expanded_url, .drop = F) %>%
+      unnest(hashtags, .drop = F) %>%
+      unnest(mentions_screen_name, .drop = T)
+    
+    # armazenar
+    
+    
+    dbWriteTable(conn = db, name = "full_data", value = data, row.names = FALSE, append = T)
+    dbWriteTable(conn = db, name = "tweets_meta", value = data_list, row.names = FALSE, append = T)
+    # contar
+    
+    l <- length(tweets$status_id)
+    c <- c +l 
+    print(paste("Total momentaneo em", c))
+    
+} 
