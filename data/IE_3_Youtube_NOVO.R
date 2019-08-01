@@ -25,13 +25,17 @@ extrafont::loadfonts() # carregar fonte
 
 # Carregar dados
 
-filenames <- list.files(pattern = ".tab")
+read_plus <- function(file) {
+  read.delim(file) %>% 
+    mutate(query = file)
+}
 
-dados <- do.call("rbind", sapply(filenames, 
-                                 read.delim,
-                                 encoding = "UTF-8"))
+dados <- list.files(pattern = "*.tab", 
+             full.names = T) %>% 
+  map_df(~read_plus(.))
 
-dados$query <- gsub(".tab*.|[0-9]+","",rownames(dados))
+
+dados$query <- gsub(".tab|./","",dados$query )
 
 
 # Limpeza de data
