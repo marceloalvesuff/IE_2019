@@ -1,12 +1,19 @@
-
 # Instagram Scraper ----------------------------------------------------
-
-
 # Marcelo Alves -----------------------------------------------------------
-library(jsonlite)
+# Script atualizado em 2021
+# Pode apresentar instabilidade em decorrência de alterações no Instagram
 
-############## Coletor do Instagram
+# instalar e carregar pacotes
+pacotesNecessarios = c('jsonlite', "dplyr","magrittr", "quanteda", "igraph", "tibble")
 
+
+for(p in pacotesNecessarios){
+  if(!require(p,character.only = TRUE)) install.packages(p)
+  library(p,character.only = TRUE)
+}
+
+
+# Funcao InstaScraper -----------------------------------------------------
 instaScraper <- function(hashtag, n) {
   
   for (y in 1:n) {
@@ -28,7 +35,12 @@ instaScraper <- function(hashtag, n) {
     
     for (x in s) {
       print(paste("Rodando a iteracao", x))
-      url <- paste0("https://www.instagram.com/p/",  x, "/?__a=1")
+      
+      url <- try(paste0("https://www.instagram.com/p/",  x, "/?__a=1"))
+      if(class(url) == "try-error")
+        next 
+      
+     
       # read url and convert to data.frame
       document2 <- fromJSON(txt=url)
       
@@ -51,7 +63,7 @@ instaScraper <- function(hashtag, n) {
       }
       
       # comment
-      comment <- document2$graphql$shortcode_media$edge_media_to_comment$count
+      comment <- document2$graphql$shortcode_media$edge_media_preview_comment$count
       if (is.null(comment)) {
         comment <- NA
       }
@@ -115,5 +127,18 @@ instaScraper <- function(hashtag, n) {
   }
   return(final)
 }
+
+
+
+# Aplicar -----------------------------------------------------------------
+# Inserir hashtag - sem usar o caractere #
+
+######## rodar função
+hashtag = "politica"
+dados <- instaScraper(hashtag = hashtag, n = 3)
+
+# exportar
+write.csv2(dados, paste0("instagram_", hashtag,".csv"))
+
 
 
