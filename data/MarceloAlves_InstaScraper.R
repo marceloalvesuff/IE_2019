@@ -134,6 +134,7 @@ instaScraper <- function(hashtag, n) {
 # Inserir hashtag - sem usar o caractere #
 
 ######## rodar função
+# n é o número de iterações do script. Cada uma retorna cerca de 60 posts.
 hashtag = "politica"
 dados <- instaScraper(hashtag = hashtag, n = 3)
 
